@@ -19,6 +19,51 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _promptController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
+  Future<void> _handleNewPrompt() async {
+    setState(() {
+      feed.add(
+        PromptQuestionWidget(
+          promptQuestion: Prompt(
+            message: _promptController.text.trim(),
+            date: DateTime.now(),
+            user: '',
+          ),
+        ),
+      );
+    });
+
+    await callModel(
+      Prompt(
+          message: _promptController.text.trim(),
+          user: 'saleh',
+          date: DateTime.now()),
+    ).then((promptAnswer) {
+      if (promptAnswer != null) {
+        setState(() {
+          feed.add(
+            PromptAnswerWidget(
+              promptAnswer: promptAnswer,
+            ),
+          );
+        });
+
+        _promptController.clear();
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 100),
+          curve: Curves.fastOutSlowIn,
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Something went wrong'),
+          ),
+        );
+        feed.removeLast();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -67,86 +112,14 @@ class _ChatScreenState extends State<ChatScreen> {
                         decoration: const InputDecoration(
                           border: InputBorder.none,
                         ),
-                        onSubmitted: (value) {
-                          setState(() {
-                            feed.add(
-                              PromptQuestionWidget(
-                                promptQuestion: Prompt(
-                                  message: _promptController.text.trim(),
-                                  date: DateTime.now(),
-                                  user: '',
-                                ),
-                              ),
-                            );
-                          });
-
-                          Future.delayed(const Duration(seconds: 1), () {
-                            setState(() {
-                              feed.add(PromptAnswerWidget(
-                                  promptAnswer: PromptAnswer(
-                                answer:
-                                    'New message' * Random.secure().nextInt(8),
-                                dateTime: DateTime.now(),
-                                model: null,
-                              )));
-                            });
-                          });
-                          _promptController.clear();
-                          _scrollController.animateTo(
-                            _scrollController.position.maxScrollExtent,
-                            duration: const Duration(milliseconds: 100),
-                            curve: Curves.fastOutSlowIn,
-                          );
+                        onSubmitted: (value) async {
+                          await _handleNewPrompt();
                         },
                       ),
                     ),
                     IconButton(
-                      onPressed: () {
-                        /*
-                        await callModel(
-                          Prompt(
-                              message: _promptController.text.trim(),
-                              user: 'saleh',
-                              date: DateTime.now()),
-                        ).then((v) {
-                          setState(() {
-                            if (v != null) {
-                              messages.add(
-                                  '${v.answer} \n ${v.model} \n ${v.dateTime?.toIso8601String()}');
-                              _promptController.clear();
-                            }
-                          });
-                        });
-                        */
-                        setState(() {
-                          feed.add(
-                            PromptQuestionWidget(
-                              promptQuestion: Prompt(
-                                message: _promptController.text.trim(),
-                                date: DateTime.now(),
-                                user: '',
-                              ),
-                            ),
-                          );
-                        });
-
-                        Future.delayed(const Duration(seconds: 1), () {
-                          setState(() {
-                            feed.add(PromptAnswerWidget(
-                                promptAnswer: PromptAnswer(
-                              answer:
-                                  'New message' * Random.secure().nextInt(8),
-                              dateTime: DateTime.now(),
-                              model: null,
-                            )));
-                          });
-                        });
-                        _promptController.clear();
-                        _scrollController.animateTo(
-                          _scrollController.position.maxScrollExtent,
-                          duration: const Duration(milliseconds: 100),
-                          curve: Curves.fastOutSlowIn,
-                        );
+                      onPressed: () async {
+                        await _handleNewPrompt();
                       },
                       icon: const Icon(
                         Icons.telegram,
@@ -212,20 +185,24 @@ class PromptAnswerWidget extends StatelessWidget {
                   children: [
                     Icon(
                       FontAwesomeIcons.volumeXmark,
+                      color: Colors.grey,
                       size: 16,
                     ),
                     SizedBox(width: 8),
                     Icon(
                       FontAwesomeIcons.soundcloud,
+                      color: Colors.grey,
                       size: 16,
                     ),
                     SizedBox(width: 8),
                     Icon(
+                      color: Colors.grey,
                       FontAwesomeIcons.soundcloud,
                       size: 16,
                     ),
                     SizedBox(width: 8),
                     Icon(
+                      color: Colors.grey,
                       FontAwesomeIcons.soundcloud,
                       size: 16,
                     )
