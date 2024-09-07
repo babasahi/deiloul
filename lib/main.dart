@@ -1,5 +1,3 @@
-import 'package:deiloul/services/backend.dart';
-import 'package:deiloul/models/prompt.dart';
 import 'package:deiloul/views/chat_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -15,7 +13,6 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
-  final String _answer = '';
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(

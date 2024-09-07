@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:deiloul/constants.dart';
 import 'package:deiloul/models/prompt.dart';
 import 'package:deiloul/models/prompt_answer.dart';
 import 'package:deiloul/services/backend.dart';
@@ -14,12 +15,14 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  List<PromptAnswer> answers = [];
+  List<Widget> feed = [];
   final TextEditingController _promptController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         leading: const Icon(Icons.tab),
       ),
@@ -29,37 +32,76 @@ class _ChatScreenState extends State<ChatScreen> {
           children: [
             SizedBox(
               height: MediaQuery.of(context).size.height * 0.7,
-              child: ListView(
-                children: answers
-                    .map((answer) => PromptAnswerWidget(promptAnswer: answer))
-                    .toList(),
+              child: ListView.builder(
+                controller: _scrollController,
+                itemCount: feed.length,
+                itemBuilder: (context, index) => feed[index],
               ),
             ),
             SizedBox(
               height: MediaQuery.of(context).size.height * 0.09,
               child: Container(
                 margin: const EdgeInsets.all(10),
-                padding: const EdgeInsets.all(4),
+                padding: const EdgeInsets.only(
+                  top: 4,
+                  bottom: 4,
+                  left: 16,
+                ),
                 decoration: BoxDecoration(
-                    color: Colors.amber.shade100,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: Colors.grey,
-                    )),
+                  color: Colors.black.withOpacity(0.06),
+                  borderRadius: BorderRadius.circular(44),
+                ),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.8,
+                      width: MediaQuery.of(context).size.width * 0.75,
                       height: MediaQuery.of(context).size.height * 0.08,
                       child: TextField(
                         controller: _promptController,
+                        style: const TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
                         decoration: const InputDecoration(
                           border: InputBorder.none,
                         ),
+                        onSubmitted: (value) {
+                          setState(() {
+                            feed.add(
+                              PromptQuestionWidget(
+                                promptQuestion: Prompt(
+                                  message: _promptController.text.trim(),
+                                  date: DateTime.now(),
+                                  user: '',
+                                ),
+                              ),
+                            );
+                          });
+
+                          Future.delayed(const Duration(seconds: 1), () {
+                            setState(() {
+                              feed.add(PromptAnswerWidget(
+                                  promptAnswer: PromptAnswer(
+                                answer:
+                                    'New message' * Random.secure().nextInt(8),
+                                dateTime: DateTime.now(),
+                                model: null,
+                              )));
+                            });
+                          });
+                          _promptController.clear();
+                          _scrollController.animateTo(
+                            _scrollController.position.maxScrollExtent,
+                            duration: const Duration(milliseconds: 100),
+                            curve: Curves.fastOutSlowIn,
+                          );
+                        },
                       ),
                     ),
                     IconButton(
-                      onPressed: () async {
+                      onPressed: () {
                         /*
                         await callModel(
                           Prompt(
@@ -77,16 +119,39 @@ class _ChatScreenState extends State<ChatScreen> {
                         });
                         */
                         setState(() {
-                          answers.add(PromptAnswer(
-                            answer: 'New message' * Random.secure().nextInt(8),
-                            dateTime: DateTime.now(),
-                            model: null,
-                          ));
+                          feed.add(
+                            PromptQuestionWidget(
+                              promptQuestion: Prompt(
+                                message: _promptController.text.trim(),
+                                date: DateTime.now(),
+                                user: '',
+                              ),
+                            ),
+                          );
                         });
+
+                        Future.delayed(const Duration(seconds: 1), () {
+                          setState(() {
+                            feed.add(PromptAnswerWidget(
+                                promptAnswer: PromptAnswer(
+                              answer:
+                                  'New message' * Random.secure().nextInt(8),
+                              dateTime: DateTime.now(),
+                              model: null,
+                            )));
+                          });
+                        });
+                        _promptController.clear();
+                        _scrollController.animateTo(
+                          _scrollController.position.maxScrollExtent,
+                          duration: const Duration(milliseconds: 100),
+                          curve: Curves.fastOutSlowIn,
+                        );
                       },
                       icon: const Icon(
-                        Icons.send,
+                        Icons.telegram,
                         color: Colors.green,
+                        size: 36,
                       ),
                     ),
                   ],
@@ -106,35 +171,105 @@ class PromptAnswerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(
-        vertical: 12,
-        horizontal: 8,
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.symmetric(
+          vertical: 12,
+          horizontal: 4,
+        ),
+        padding: const EdgeInsets.all(8),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CircleAvatar(
+              backgroundColor: Colors.blue.withOpacity(0.12),
+              radius: 18,
+              child: const Center(
+                child: Icon(
+                  FontAwesomeIcons.magento,
+                  size: 16,
+                ),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: screenWidth(context) * 0.8,
+                  child: Text(
+                    promptAnswer.answer,
+                    style: const TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Icon(
+                      FontAwesomeIcons.volumeXmark,
+                      size: 16,
+                    ),
+                    SizedBox(width: 8),
+                    Icon(
+                      FontAwesomeIcons.soundcloud,
+                      size: 16,
+                    ),
+                    SizedBox(width: 8),
+                    Icon(
+                      FontAwesomeIcons.soundcloud,
+                      size: 16,
+                    ),
+                    SizedBox(width: 8),
+                    Icon(
+                      FontAwesomeIcons.soundcloud,
+                      size: 16,
+                    )
+                  ],
+                )
+              ],
+            ),
+          ],
+        ),
       ),
-      padding: const EdgeInsets.all(8),
-      child: Column(
-        children: [
-          Text(
-            promptAnswer.answer,
+    );
+  }
+}
+
+class PromptQuestionWidget extends StatelessWidget {
+  const PromptQuestionWidget({super.key, required this.promptQuestion});
+
+  final Prompt promptQuestion;
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Container(
+        width: screenWidth(context) * 0.7,
+        margin: const EdgeInsets.symmetric(
+          vertical: 12,
+          horizontal: 8,
+        ),
+        padding: const EdgeInsets.symmetric(
+          vertical: 6,
+          horizontal: 16,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.pinkAccent.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(22),
+        ),
+        child: Text(
+          promptQuestion.message,
+          style: const TextStyle(
+            fontFamily: 'Poppins',
+            fontSize: 13,
           ),
-          const SizedBox(height: 8),
-          const Row(
-            children: [
-              Icon(
-                FontAwesomeIcons.volumeXmark,
-              ),
-              Icon(
-                FontAwesomeIcons.soundcloud,
-              ),
-              Icon(
-                FontAwesomeIcons.soundcloud,
-              ),
-              Icon(
-                FontAwesomeIcons.soundcloud,
-              )
-            ],
-          )
-        ],
+        ),
       ),
     );
   }
