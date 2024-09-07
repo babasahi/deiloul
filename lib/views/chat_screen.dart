@@ -31,7 +31,11 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
       );
     });
-
+    _scrollController.animateTo(
+      _scrollController.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 100),
+      curve: Curves.fastOutSlowIn,
+    );
     await callModel(
       Prompt(
           message: _promptController.text.trim(),
@@ -56,10 +60,21 @@ class _ChatScreenState extends State<ChatScreen> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Something went wrong'),
+            backgroundColor: Colors.redAccent,
+            content: Text(
+              'Something went wrong',
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: Colors.white,
+              ),
+            ),
           ),
         );
-        feed.removeLast();
+        setState(() {
+          feed.removeLast();
+        });
       }
     });
   }
