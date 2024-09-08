@@ -3,6 +3,8 @@ import 'package:deiloul/models/prompt.dart';
 import 'package:deiloul/models/prompt_answer.dart';
 import 'package:deiloul/services/backend.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -17,13 +19,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _promptController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
-  void _handleNewPrompt() {
-    print('log: handling model');
-    callModel(Prompt(
-        message: _promptController.text.trim(),
-        user: 'saleh',
-        date: DateTime.now()));
-    /*
+  void _handleNewPrompt() async {
     setState(() {
       feed.add(
         PromptQuestionWidget(
@@ -81,7 +77,6 @@ class _ChatScreenState extends State<ChatScreen> {
         });
       }
     });
-    */
   }
 
   @override
@@ -89,6 +84,7 @@ class _ChatScreenState extends State<ChatScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.white,
         leading: const Icon(Icons.tab),
       ),
       body: SafeArea(
@@ -113,7 +109,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   left: 16,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.06),
+                  color: kPrimaryColor.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(44),
                 ),
                 child: Row(
@@ -127,7 +123,6 @@ class _ChatScreenState extends State<ChatScreen> {
                         style: const TextStyle(
                           fontFamily: 'Poppins',
                           fontSize: 14,
-                          fontWeight: FontWeight.bold,
                         ),
                         decoration: const InputDecoration(
                           border: InputBorder.none,
@@ -138,12 +133,13 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
                     ),
                     IconButton(
+                      color: kPrimaryColor.withOpacity(0.2),
                       onPressed: () {
                         _handleNewPrompt();
                       },
                       icon: const Icon(
                         Icons.telegram,
-                        color: Colors.green,
+                        color: kPrimaryColor,
                         size: 36,
                       ),
                     ),
@@ -176,14 +172,10 @@ class PromptAnswerWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             CircleAvatar(
-              backgroundColor: Colors.blue.withOpacity(0.12),
               radius: 18,
-              child: const Center(
-                child: Icon(
-                  FontAwesomeIcons.magento,
-                  size: 16,
-                ),
-              ),
+              child: Center(
+                  child: Image.network(
+                      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSTaaUHLSKdxKeQRsjSuYVQQH0PLb9PVFYbA&s')),
             ),
             const SizedBox(width: 6),
             Column(
@@ -199,33 +191,37 @@ class PromptAnswerWidget extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 8),
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Icon(
-                      FontAwesomeIcons.volumeXmark,
-                      color: Colors.grey,
-                      size: 16,
+                    GestureDetector(
+                      onTap: () {
+                        Clipboard.setData(
+                          ClipboardData(
+                            text: promptAnswer.answer,
+                          ),
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            backgroundColor: Colors.green,
+                            content: Text(
+                              'Copied to clipboard',
+                              style: TextStyle(
+                                fontFamily: 'Poppins',
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                      child: const Icon(
+                        FontAwesomeIcons.copy,
+                        color: Colors.grey,
+                        size: 16,
+                      ),
                     ),
-                    SizedBox(width: 8),
-                    Icon(
-                      FontAwesomeIcons.soundcloud,
-                      color: Colors.grey,
-                      size: 16,
-                    ),
-                    SizedBox(width: 8),
-                    Icon(
-                      color: Colors.grey,
-                      FontAwesomeIcons.soundcloud,
-                      size: 16,
-                    ),
-                    SizedBox(width: 8),
-                    Icon(
-                      color: Colors.grey,
-                      FontAwesomeIcons.soundcloud,
-                      size: 16,
-                    )
                   ],
                 )
               ],
@@ -257,7 +253,7 @@ class PromptQuestionWidget extends StatelessWidget {
           horizontal: 16,
         ),
         decoration: BoxDecoration(
-          color: Colors.pinkAccent.withOpacity(0.08),
+          color: kPrimaryColor.withOpacity(0.12),
           borderRadius: BorderRadius.circular(22),
         ),
         child: Text(
