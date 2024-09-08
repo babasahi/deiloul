@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:deiloul/constants.dart';
 import 'package:deiloul/models/prompt.dart';
 import 'package:deiloul/models/prompt_answer.dart';
@@ -19,7 +17,13 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _promptController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
-  Future<void> _handleNewPrompt() async {
+  void _handleNewPrompt() {
+    print('log: handling model');
+    callModel(Prompt(
+        message: _promptController.text.trim(),
+        user: 'saleh',
+        date: DateTime.now()));
+    /*
     setState(() {
       feed.add(
         PromptQuestionWidget(
@@ -77,6 +81,7 @@ class _ChatScreenState extends State<ChatScreen> {
         });
       }
     });
+    */
   }
 
   @override
@@ -127,14 +132,14 @@ class _ChatScreenState extends State<ChatScreen> {
                         decoration: const InputDecoration(
                           border: InputBorder.none,
                         ),
-                        onSubmitted: (value) async {
-                          await _handleNewPrompt();
+                        onSubmitted: (value) {
+                          _handleNewPrompt();
                         },
                       ),
                     ),
                     IconButton(
-                      onPressed: () async {
-                        await _handleNewPrompt();
+                      onPressed: () {
+                        _handleNewPrompt();
                       },
                       icon: const Icon(
                         Icons.telegram,

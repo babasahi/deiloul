@@ -1,31 +1,36 @@
 import 'dart:convert';
 import 'package:deiloul/models/prompt.dart';
-import 'package:deiloul/models/prompt_answer.dart';
 import 'package:http/http.dart' as http;
 
-Future<PromptAnswer?> callModel(Prompt prompt) async {
+Stream<String> callModel(Prompt prompt) async* {
   print('log: calling model ');
   Map<String, String> headers = {
     'Content-Type': 'application/json',
   };
-  Map<String, String> body = prompt.toJson();
+  Map<String, dynamic> body = prompt.toJson();
 
   try {
-    final response = await http.post(
-      Uri.parse('http://127.0.0.1:8000/generate'),
-      body: jsonEncode(body),
-      headers: headers,
-    );
-    if (response.statusCode.toString().startsWith('2')) {
-      print(jsonDecode(response.body).toString());
-      return PromptAnswer.fromJson(
-          jsonDecode(response.body) as Map<String, dynamic>);
+    // Create a request with streaming
+    final request =
+        http.Request('POST', Uri.parse('http://127.0.0.1:8000/generate'))
+          ..headers.addAll(headers)
+          ..body = jsonEncode(body);
+
+    // Send the request as a stream
+    final responseStream = await http.Client().send(request);
+
+    if (responseStream.statusCode.toString().startsWith('2')) {
+      // Listen for streamed response chunks and yield them as a stream
+      await for (var chunk in responseStream.stream.transform(utf8.decoder)) {
+        print('log: $chunk');
+        yield chunk; // Yield each chunk as it arrives
+      }
     } else {
-      print('log: ${response.statusCode} ${response.body.toString()}');
-      return null;
+      print('log: ${responseStream.statusCode}');
+      yield 'Error: ${responseStream.statusCode}';
     }
   } catch (e) {
     print('log: $e');
-    return null;
+    yield 'Error: $e';
   }
 }
