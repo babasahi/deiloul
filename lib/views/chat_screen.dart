@@ -4,7 +4,6 @@ import 'package:deiloul/models/prompt_answer.dart';
 import 'package:deiloul/services/backend.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -43,6 +42,12 @@ class _ChatScreenState extends State<ChatScreen> {
           date: DateTime.now()),
     ).then((promptAnswer) {
       if (promptAnswer != null) {
+        _promptController.clear();
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 100),
+          curve: Curves.fastOutSlowIn,
+        );
         setState(() {
           feed.add(
             PromptAnswerWidget(
@@ -50,13 +55,6 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           );
         });
-
-        _promptController.clear();
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 100),
-          curve: Curves.fastOutSlowIn,
-        );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

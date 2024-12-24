@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:deiloul/models/prompt.dart';
 import 'package:deiloul/models/prompt_answer.dart';
 import 'package:http/http.dart' as http;
@@ -11,11 +12,13 @@ Future<PromptAnswer?> callModel(Prompt prompt) async {
   Map<String, String> body = prompt.toJson();
 
   try {
+    log(jsonEncode(body));
     final response = await http.post(
       Uri.parse('http://127.0.0.1:8000/generate'),
       body: jsonEncode(body),
       headers: headers,
     );
+
     if (response.statusCode.toString().startsWith('2')) {
       print(jsonDecode(response.body).toString());
       return PromptAnswer.fromJson(
